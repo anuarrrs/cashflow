@@ -14,7 +14,7 @@ const formatCompact = (num) => {
 
 const getMonthsRange = (expenses) => {
   const now = new Date()
-  let minDate = new Date(now.getFullYear(), now.getMonth() - 5, 1) 
+  let minDate = new Date(now.getFullYear(), now.getMonth() - 4, 1) 
   
   if (expenses && expenses.length > 0) {
     const earliest = new Date(Math.min(...expenses.map(e => new Date(e.expense_date))))
@@ -23,7 +23,7 @@ const getMonthsRange = (expenses) => {
   }
   
   const result = []
-  let current = new Date(now.getFullYear(), now.getMonth(), 1)
+  let current = new Date(now.getFullYear(), now.getMonth() + 1, 1)
   
   while (current >= minDate) {
     const y = current.getFullYear()
