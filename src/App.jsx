@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Settings from './pages/Settings'
 import Category from './pages/Category'
+import Stats from './pages/Stats'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -55,6 +56,12 @@ function App() {
           </Route>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="category/:id" element={<Category />} />
+          </Route>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="stats" element={<Stats />} /> {/* НОВЫЙ МАРШРУТ */}
             <Route path="settings" element={<Settings />} />
             <Route path="category/:id" element={<Category />} />
           </Route>
