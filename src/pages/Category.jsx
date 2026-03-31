@@ -44,6 +44,10 @@ export default function Category() {
     const { data: catData } = await supabase.from('categories').select('*').eq('id', id).single()
     const { data: subData } = await supabase.from('subcategories').select('*').eq('category_id', id)
 
+    if (subData) {
+      subData.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+    }
+
     let filteredExpenses = []
     if (subData && subData.length > 0) {
       const subIds = subData.map(s => s.id)
@@ -101,7 +105,7 @@ export default function Category() {
 
   return (
     <div className="space-y-4 pb-6 relative">
-      <header className="flex items-center gap-4 pt-4 pb-2">
+      <header className="flex items-center gap-4 pt-4 pb-2 safe-top">
         <button onClick={() => navigate(-1)} className="p-2 bg-[#1E1E1E] rounded-xl text-gray-400 hover:text-white transition-colors active:scale-95"><ArrowLeft size={20} /></button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{category?.name}</h1>

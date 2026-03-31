@@ -244,7 +244,7 @@ export default function AddExpenseModal({ category, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-[#121212] flex flex-col sm:max-w-md sm:mx-auto sm:border-x sm:border-[#2A2A2A] animate-in slide-in-from-bottom-full duration-200">
-      <header className="flex justify-between items-center p-3 bg-[#1E1E1E] border-b border-[#2A2A2A] safe-top">
+      <header className="flex justify-between items-center px-3 pb-3 bg-[#1E1E1E] border-b border-[#2A2A2A] safe-top">
         <div>
           <h2 className="text-lg font-bold">Новые траты</h2>
           <p className="text-xs text-[#6366F1]">{category.name}</p>
@@ -261,7 +261,7 @@ export default function AddExpenseModal({ category, onClose }) {
         <div className="bg-[#1E1E1E] border border-[#2A2A2A] rounded-xl p-3 mb-4 shadow-sm">
           <div className="flex items-center gap-2 mb-2 text-gray-400">
             <Store size={14} />
-            <span className="text-xs font-medium uppercase tracking-wider">Чек из магазина</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Название магазина</span>
           </div>
           <select 
             value={selectedStoreId} 
