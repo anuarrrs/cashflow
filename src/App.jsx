@@ -52,16 +52,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="category/:id" element={<Category />} />
-          </Route>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="stats" element={<Stats />} /> {/* НОВЫЙ МАРШРУТ */}
+            <Route path="stats" element={<Stats />} />
             <Route path="settings" element={<Settings />} />
             <Route path="category/:id" element={<Category />} />
           </Route>
