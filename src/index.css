@@ -1,4 +1,8 @@
 @import "tailwindcss";
+html, body {
+  background-color: #121212;
+  color: white;
+}
 .safe-top {
   padding-top: max(1.5rem, env(safe-area-inset-top)) !important;
 }
