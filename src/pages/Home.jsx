@@ -56,7 +56,7 @@ export default function Home() {
 
   return (
     <div className="space-y-6 pb-6">
-      <header className="flex flex-col items-center pt-6 pb-2">
+      <header className="flex flex-col items-center pb-2 safe-top">
         <div className="flex items-center justify-between w-full max-w-xs mb-4">
           <button onClick={handlePrevMonth} className="p-2 text-gray-500 hover:text-white transition-colors active:scale-95">
             <ChevronLeft size={32} />
