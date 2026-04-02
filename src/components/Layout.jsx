@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Home, Settings, PieChart } from 'lucide-react'
+import { Home, Settings, PieChart, Lightbulb } from 'lucide-react'
 
 export default function Layout() {
   return (
@@ -10,26 +10,22 @@ export default function Layout() {
 
       <nav className="fixed bottom-0 w-full max-w-md bg-[#18181B]/90 backdrop-blur-md border-t border-[#2A2A2A] px-6 py-3 pb-safe z-40">
         <div className="flex justify-between items-center">
-          <NavLink 
-            to="/" 
-            className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}
-          >
+          <NavLink to="/" className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}>
             <Home size={24} />
             <span className="text-[10px] font-medium">Главная</span>
           </NavLink>
           
-          <NavLink 
-            to="/stats" 
-            className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}
-          >
+          <NavLink to="/stats" className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}>
             <PieChart size={24} />
             <span className="text-[10px] font-medium">Аналитика</span>
           </NavLink>
 
-          <NavLink 
-            to="/settings" 
-            className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}
-          >
+          <NavLink to="/insights" className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#F59E0B]' : 'text-gray-500 hover:text-gray-300'}`}>
+            <Lightbulb size={24} />
+            <span className="text-[10px] font-medium">Советы</span>
+          </NavLink>
+
+          <NavLink to="/settings" className={({isActive}) => `flex flex-col items-center gap-1 p-2 transition-colors ${isActive ? 'text-[#6366F1]' : 'text-gray-500 hover:text-gray-300'}`}>
             <Settings size={24} />
             <span className="text-[10px] font-medium">Настройки</span>
           </NavLink>

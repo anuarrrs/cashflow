@@ -15,6 +15,8 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
   const [formData, setFormData] = useState({})
   const [isSaving, setIsSaving] = useState(false)
   const [wasModified, setWasModified] = useState(false)
+  
+  const [updateStorePrice, setUpdateStorePrice] = useState(true)
 
   useEffect(() => {
     if (expenseId) {
@@ -91,6 +93,14 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
     setLoading(false)
   }
 
+  const isPriceChanged = expense && parseFloat(formData.price) !== parseFloat(expense.price)
+
+  useEffect(() => {
+    if (!isPriceChanged) {
+      setUpdateStorePrice(true)
+    }
+  }, [isPriceChanged])
+
   const handleSaveEdit = async () => {
     setIsSaving(true)
     try {
@@ -103,6 +113,17 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
 
       const newCreatedAt = new Date(`${formData.date}T${formData.time}:00`).toISOString()
       
+      const shouldUpdateStorePrice = formData.storeId && (!isPriceChanged || updateStorePrice)
+      
+      if (shouldUpdateStorePrice) {
+        await supabase.from('product_stores').upsert({
+          product_id: expense.product_id,
+          store_id: formData.storeId,
+          last_price: parseFloat(formData.price),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'product_id, store_id' })
+      }
+
       await supabase.from('expenses').update({
         price: parseFloat(formData.price),
         quantity: parseFloat(formData.quantity),
@@ -160,20 +181,20 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
         ) : (
           <>
             <header className="p-5 border-b border-[#2A2A2A] relative shrink-0 bg-[#18181B] rounded-t-3xl">
-              <button onClick={handleClose} className="absolute top-5 right-5 p-2 bg-[#2A2A2A] rounded-full text-gray-400 hover:text-white active:scale-95 cursor-pointer">
+              <button onClick={handleClose} className="absolute top-5 right-5 p-2 bg-[#2A2A2A] rounded-full text-gray-400 hover:text-white active:scale-95 cursor-pointer z-10">
                 <X size={18} />
               </button>
               
               {!isEditing ? (
-                <div className="pr-10">
-                  <div className="flex items-center gap-2 mb-2">
+                <div>
+                  <div className="flex items-center gap-2 mb-2 pr-8">
                     {p?.is_mandatory && <span className="bg-[#6366F1]/20 text-[#6366F1] p-1 rounded-md"><Star size={12} fill="currentColor" /></span>}
                     <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{p?.subcategories?.name}</span>
                     <button onClick={() => setIsEditing(true)} className="ml-2 text-gray-500 hover:text-white p-1 bg-[#2A2A2A] rounded-md transition-colors active:scale-90 cursor-pointer">
                       <Edit2 size={12} />
                     </button>
                   </div>
-                  <h2 className="text-xl font-bold leading-tight text-white mb-3">{p?.name}</h2>
+                  <h2 className="text-xl font-bold leading-tight text-white mb-3 pr-8">{p?.name}</h2>
                   
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="bg-[#121212] border border-[#2A2A2A] p-2.5 rounded-xl">
@@ -192,10 +213,10 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
                   </div>
                 </div>
               ) : (
-                <div className="pr-10 space-y-3">
-                  <div className="flex justify-between items-center mb-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 mb-2 pr-8">
                     <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Редактирование</span>
-                    <button onClick={() => setIsEditing(false)} className="text-xs text-gray-400 underline cursor-pointer">Отмена</button>
+                    <button onClick={() => setIsEditing(false)} className="text-xs text-gray-400 hover:text-white underline cursor-pointer transition-colors">Отмена</button>
                   </div>
                   
                   <div className="flex gap-2">
@@ -233,6 +254,20 @@ export default function ExpenseDetailsModal({ expenseId, onClose }) {
                     <option value="">Без магазина</option>
                     {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
+
+                  {isPriceChanged && (
+                    <label className="flex items-center gap-2 bg-[#121212] border border-[#2A2A2A] p-3 rounded-lg cursor-pointer hover:border-[#3F3F46] transition-colors animate-in fade-in">
+                      <input 
+                        type="checkbox" 
+                        checked={updateStorePrice} 
+                        onChange={(e) => setUpdateStorePrice(e.target.checked)}
+                        className="accent-[#6366F1] w-4 h-4 cursor-pointer rounded"
+                      />
+                      <span className="text-xs text-gray-300 select-none">
+                        Сделать эту цену актуальной для магазина
+                      </span>
+                    </label>
+                  )}
 
                   <button onClick={handleSaveEdit} disabled={isSaving} className="w-full py-2.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 mt-2 cursor-pointer transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                     <Check size={16} /> {isSaving ? 'Сохранение...' : 'Сохранить изменения'}

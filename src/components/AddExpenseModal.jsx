@@ -23,6 +23,7 @@ export default function AddExpenseModal({ category, onClose }) {
   const [blocks, setBlocks] = useState([])
   const [subcategories, setSubcategories] = useState([])
   const [knownProducts, setKnownProducts] = useState([])
+  const [storePrices, setStorePrices] = useState([])
   
   const [allStores, setAllStores] = useState([])
   const [linkedStoreIds, setLinkedStoreIds] = useState([])
@@ -50,6 +51,7 @@ export default function AddExpenseModal({ category, onClose }) {
         setKnownProducts(modalCache[categoryId].prods)
         setAllStores(modalCache[categoryId].stores)
         setLinkedStoreIds(modalCache[categoryId].links)
+        setStorePrices(modalCache[categoryId].storePrices)
         setLoadingData(false)
       } else {
         setLoadingData(true)
@@ -58,10 +60,18 @@ export default function AddExpenseModal({ category, onClose }) {
       const { data: subs } = await supabase.from('subcategories').select('*').eq('category_id', categoryId)
       
       let prods = []
+      let sprices = []
+      
       if (subs && subs.length > 0) {
         const subIds = subs.map(s => s.id)
         const { data } = await supabase.from('products').select('*').in('subcategory_id', subIds)
         prods = data || []
+
+        if (prods.length > 0) {
+          const prodIds = prods.map(p => p.id)
+          const { data: storePricesData } = await supabase.from('product_stores').select('*').in('product_id', prodIds)
+          sprices = storePricesData || []
+        }
       }
       
       const { data: storesData } = await supabase.from('stores').select('*').order('name')
@@ -71,13 +81,15 @@ export default function AddExpenseModal({ category, onClose }) {
         subs: subs || [],
         prods: prods,
         stores: storesData || [],
-        links: linksData ? linksData.map(l => l.store_id) : []
+        links: linksData ? linksData.map(l => l.store_id) : [],
+        storePrices: sprices
       }
       
       setSubcategories(subs || [])
       setKnownProducts(prods)
       setAllStores(storesData || [])
       setLinkedStoreIds(linksData ? linksData.map(l => l.store_id) : [])
+      setStorePrices(sprices)
 
     } catch (err) {
       console.error("Ошибка при загрузке справочников:", err)
@@ -121,10 +133,33 @@ export default function AddExpenseModal({ category, onClose }) {
   }
 
   const handleSelectProduct = (blockId, product) => {
+    let currentStoreId = null
+    if (selectedStoreId && selectedStoreId !== 'new' && selectedStoreId !== 'other') {
+      currentStoreId = selectedStoreId
+    } else if (selectedStoreId === 'other' && selectedOtherStoreId) {
+      currentStoreId = selectedOtherStoreId
+    }
+
+    let productPrice = product.last_price || ''
+    if (currentStoreId) {
+      const storeSpecificPrice = storePrices.find(
+        sp => sp.product_id === product.id && sp.store_id === currentStoreId
+      )
+      if (storeSpecificPrice) {
+        productPrice = storeSpecificPrice.last_price
+      }
+    }
+
     setBlocks(blocks.map(b => b.id !== blockId ? b : {
-      ...b, productId: product.id, name: product.name, subcategoryId: product.subcategory_id,
-      price: product.last_price || '', unitValue: product.unit_value || '', unit: product.unit || 'шт',
-      isMandatory: product.is_mandatory || false, manualSubcategory: true
+      ...b, 
+      productId: product.id, 
+      name: product.name, 
+      subcategoryId: product.subcategory_id,
+      price: productPrice,
+      unitValue: product.unit_value || '', 
+      unit: product.unit || 'шт',
+      isMandatory: product.is_mandatory || false, 
+      manualSubcategory: true
     }))
     setFocusedBlockId(null)
   }
@@ -223,10 +258,19 @@ export default function AddExpenseModal({ category, onClose }) {
           finalProductId = newProduct[0].id
         }
 
+        await supabase.from('product_stores').upsert({
+          product_id: finalProductId,
+          store_id: finalStoreId,
+          last_price: price,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'product_id, store_id' })
+
         await supabase.from('expenses').insert([{
           product_id: finalProductId, quantity: quantity, price: price, store_id: finalStoreId
         }])
       }
+      
+      delete modalCache[category.id]
 
       onClose()
     } catch (err) {

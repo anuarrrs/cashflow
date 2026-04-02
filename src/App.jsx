@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Settings from './pages/Settings'
 import Category from './pages/Category'
 import Stats from './pages/Stats'
+import Insights from './pages/Insights'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -45,6 +46,7 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="stats" element={<Stats />} />
+            <Route path="insights" element={<Insights />} />
             <Route path="settings" element={<Settings />} />
             <Route path="category/:id" element={<Category />} />
           </Route>

@@ -1,0 +1,86 @@
+create table categories (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  name text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table subcategories (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  category_id uuid references categories(id) on delete cascade,
+  name text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table products (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  subcategory_id uuid references subcategories(id) on delete cascade,
+  name text not null,
+  unit text not null,
+  unit_value numeric not null,
+  last_price numeric default 0,
+  is_mandatory boolean default false,
+  created_at timestamp with time zone default now()
+);
+
+create table expenses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  product_id uuid references products(id) on delete cascade,
+  quantity numeric not null,
+  price numeric not null,
+  expense_date date not null default current_date,
+  created_at timestamp with time zone default now()
+);
+
+alter table categories enable row level security;
+alter table subcategories enable row level security;
+alter table products enable row level security;
+alter table expenses enable row level security;
+
+create policy "Users can manage their own categories" on categories for all using (auth.uid() = user_id);
+create policy "Users can manage their own subcategories" on subcategories for all using (auth.uid() = user_id);
+create policy "Users can manage their own products" on products for all using (auth.uid() = user_id);
+create policy "Users can manage their own expenses" on expenses for all using (auth.uid() = user_id);
+
+
+--v2
+create table stores (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  name text not null,
+  created_at timestamp with time zone default now()
+);
+
+create table category_stores (
+  category_id uuid references categories(id) on delete cascade,
+  store_id uuid references stores(id) on delete cascade,
+  primary key (category_id, store_id)
+);
+
+alter table expenses add column store_id uuid references stores(id);
+
+alter table stores enable row level security;
+alter table category_stores enable row level security;
+
+create policy "Users can manage their own stores" on stores for all using (auth.uid() = user_id);
+create policy "Users can manage their own category_stores" on category_stores for all using (
+  auth.uid() = (select user_id from categories where id = category_id)
+);
+
+
+--v3
+create table product_stores (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users not null default auth.uid(),
+  product_id uuid references products(id) on delete cascade,
+  store_id uuid references stores(id) on delete cascade,
+  last_price numeric not null,
+  updated_at timestamp with time zone default now(),
+  unique(product_id, store_id)
+);
+
+alter table product_stores enable row level security;
+create policy "Users can manage their own product_stores" on product_stores for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
